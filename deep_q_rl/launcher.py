@@ -14,6 +14,7 @@ import mxnet as mx
 import ale_experiment
 import ale_agent
 import q_network
+import gym
 
 def process_args(args, defaults, description):
     """
@@ -202,6 +203,7 @@ def launch(args, defaults, description):
     num_actions = len(ale.getMinimalActionSet())
 
 
+
     network = q_network.DeepQLearner(defaults.RESIZED_WIDTH,
                                      defaults.RESIZED_HEIGHT,
                                      num_actions,
@@ -232,7 +234,9 @@ def launch(args, defaults, description):
                                   parameters.update_frequency,
                                   rng)
 
-    experiment = ale_experiment.ALEExperiment(ale, agent,
+    env = gym.make(defaults.GAME_NAME)
+
+    experiment = ale_experiment.ALEExperiment(env, agent,
                                               defaults.RESIZED_WIDTH,
                                               defaults.RESIZED_HEIGHT,
                                               parameters.resize_method,

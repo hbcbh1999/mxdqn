@@ -7,6 +7,7 @@ Author: Nathan Sprague
 import logging
 import numpy as np
 import cv2
+from skimage.color import rgb2gray
 
 # Number of rows to crop off the bottom of the (downsampled) screen.
 # This is appropriate for breakout, but it may need to be modified
@@ -15,21 +16,21 @@ CROP_OFFSET = 8
 
 
 class ALEExperiment(object):
-    def __init__(self, ale, agent, resized_width, resized_height,
+    def __init__(self, env, agent, resized_width, resized_height,
                  resize_method, num_epochs, epoch_length, test_length,
                  frame_skip, death_ends_episode, max_start_nullops, rng):
-        self.ale = ale
+        self.env = env
         self.agent = agent
         self.num_epochs = num_epochs
         self.epoch_length = epoch_length
         self.test_length = test_length
         self.frame_skip = frame_skip
         self.death_ends_episode = death_ends_episode
-        self.min_action_set = ale.getMinimalActionSet()
+        #self.min_action_set = ale.getMinimalActionSet()
         self.resized_width = resized_width
         self.resized_height = resized_height
         self.resize_method = resize_method
-        self.width, self.height = ale.getScreenDims()
+        self.height, self.width, _ = env.observation_space.shape
 
         self.buffer_length = 2
         self.buffer_count = 0
@@ -71,11 +72,10 @@ class ALEExperiment(object):
         reward_sum = 0
         while steps_left > 0:
             prefix = "testing" if testing else "training"
-            logging.info(prefix + " epoch: " + str(epoch) + " steps_left: " +
+            print(prefix + " epoch: " + str(epoch) + " steps_left: " +
                          str(steps_left) + " reward_sum: " + str(reward_sum))
             _, num_steps, reward_sum = self.run_episode(steps_left, testing)
             steps_left -= num_steps
-
 
     def _init_episode(self):
         """ This method resets the game if needed, performs enough null
@@ -83,19 +83,16 @@ class ALEExperiment(object):
         performs a randomly determined number of null action to randomize
         the initial game state."""
 
-        if not self.terminal_lol or self.ale.game_over():
-            self.ale.reset_game()
-
-            if self.max_start_nullops > 0:
-                random_actions = self.rng.randint(0, self.max_start_nullops+1)
-                for _ in range(random_actions):
-                    self._act(0) # Null action
+        self.env.reset()
+        if self.max_start_nullops > 0:
+            random_actions = self.rng.randint(0, self.max_start_nullops+1)
+            for _ in range(random_actions):
+                self._act(0) # Null action
 
         # Make sure the screen buffer is filled at the beginning of
         # each episode...
         self._act(0)
         self._act(0)
-
 
     def _act(self, action):
         """Perform the indicated action for a single frame, return the
@@ -103,10 +100,12 @@ class ALEExperiment(object):
         buffer
 
         """
-        reward = self.ale.act(action)
+        obs, reward, terminal, _ = self.env.step(action)
         index = self.buffer_count % self.buffer_length
 
-        self.ale.getScreenGrayscale(self.screen_buffer[index, ...])
+        #self.env.ale.getScreenGrayscale(self.screen_buffer[index, ...])
+        self.screen_buffer[index, ...] = rgb2gray(obs)
+        self.terminal_lol = terminal
 
         self.buffer_count += 1
         return reward
@@ -117,7 +116,6 @@ class ALEExperiment(object):
         reward = 0
         for _ in range(self.frame_skip):
             reward += self._act(action)
-
         return reward
 
     def run_episode(self, max_steps, testing):
@@ -134,19 +132,14 @@ class ALEExperiment(object):
 
         self._init_episode()
 
-        start_lives = self.ale.lives()
-
         action = self.agent.start_episode(self.get_observation())
         num_steps = 0
-	reward_sum = 0
+        reward_sum = 0
         while True:
-            reward = self._step(self.min_action_set[action])
-	    reward_sum += reward
-            self.terminal_lol = (self.death_ends_episode and not testing and
-                                 self.ale.lives() < start_lives)
-            terminal = self.ale.game_over() or self.terminal_lol
+            reward = self._step(action)
+            reward_sum += reward
             num_steps += 1
-
+            terminal = self.terminal_lol
             if terminal or num_steps >= max_steps:
                 self.agent.end_episode(reward, terminal)
                 break
