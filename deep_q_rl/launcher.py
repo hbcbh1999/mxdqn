@@ -14,7 +14,8 @@ import mxnet as mx
 import ale_experiment
 import ale_agent
 import q_network
-import gym
+from gym_torcs import TorcsEnv
+
 
 def process_args(args, defaults, description):
     """
@@ -234,8 +235,8 @@ def launch(args, defaults, description):
                                   parameters.update_frequency,
                                   rng)
 
-    env = gym.make(defaults.GAME_NAME)
-
+    #env = gym.make(defaults.GAME_NAME)
+    env = TorcsEnv(vision=True, throttle=False)
     experiment = ale_experiment.ALEExperiment(env, agent,
                                               defaults.RESIZED_WIDTH,
                                               defaults.RESIZED_HEIGHT,

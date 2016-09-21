@@ -26,11 +26,13 @@ class ALEExperiment(object):
         self.test_length = test_length
         self.frame_skip = frame_skip
         self.death_ends_episode = death_ends_episode
-        #self.min_action_set = ale.getMinimalActionSet()
+        self.action_set = [[0.0], [-0.8], [0.8], [-0.3], [0.3]]
         self.resized_width = resized_width
         self.resized_height = resized_height
         self.resize_method = resize_method
-        self.height, self.width, _ = env.observation_space.shape
+
+        obs = env.reset()
+        _, self.height, self.width = obs.img.shape
 
         self.buffer_length = 2
         self.buffer_count = 0
@@ -100,13 +102,13 @@ class ALEExperiment(object):
         buffer
 
         """
-        obs, reward, terminal, _ = self.env.step(action)
+        obs, reward, terminal, _ = self.env.step(self.action_set[action])
         index = self.buffer_count % self.buffer_length
-
+        img = obs.img
+        img = np.swapaxes(img, 0, 2)
         #self.env.ale.getScreenGrayscale(self.screen_buffer[index, ...])
-        self.screen_buffer[index, ...] = rgb2gray(obs)
+        self.screen_buffer[index, ...] = rgb2gray(img)
         self.terminal_lol = terminal
-
         self.buffer_count += 1
         return reward
 
