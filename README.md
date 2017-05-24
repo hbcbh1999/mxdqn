@@ -53,3 +53,6 @@ MXNet implementation of Deep Q-learning
 | 16257       | 16871               | 19761               | 17298 | 42684  | 211099.5 | 2539%                    | 18717%                     |
 | 564         | 1981                | 37                  | 4757  | 3393   | 1343.6   | 68%                      | 19%                        |
 | 33          | 3365                | 21                  | 9173  | 4977   | 18261.8  | 54%                      | 199%                       |
+
+
+!()[https://raw.githubusercontent.com/zmonoid/mxdqn/master/figs/enduro.png]
