@@ -2,7 +2,7 @@
 MXNet implementation of Deep Q-learning
 
 # Result
-| Game                | Random Play | Best Linear Learner | Contingency (SARSA) | Human | DQN    | MXDQN    | Normalized DON (% Human) |
+| Game                | Random Play | Best Linear Learner | Contingency (SARSA) | Human | DQN    | MXDQN    | Normalized DQN (% Human) |
 |---------------------|-------------|---------------------|---------------------|-------|--------|----------|--------------------------|
 | Alien               | 228         | 939                 | 103                 | 6875  | 3069   | 2331.1   | 43%                      |
 | Amidar              | 6           | 103                 | 184                 | 1676  | 739.5  | 829      | 44%                      |
