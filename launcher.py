@@ -292,20 +292,20 @@ def launch(args, defaults, description):
     ctx = mx.gpu(int(parameters.ctx))
 
     ale = ale_python_interface.ALEInterface()
-    ale.setInt('random_seed', rng.randint(1000))
+    ale.setInt(b'random_seed', rng.randint(1000))
 
     if parameters.display_screen:
         import sys
         if sys.platform == 'darwin':
             import pygame
             pygame.init()
-            ale.setBool('sound', False)  # Sound doesn't work on OSX
+            ale.setBool(b'sound', False)  # Sound doesn't work on OSX
 
-    ale.setBool('display_screen', parameters.display_screen)
-    ale.setFloat('repeat_action_probability',
+    ale.setBool(b'display_screen', parameters.display_screen)
+    ale.setFloat(b'repeat_action_probability',
                  parameters.repeat_action_probability)
 
-    ale.loadROM(full_rom_path)
+    ale.loadROM(str.encode(full_rom_path))
 
     num_actions = len(ale.getMinimalActionSet())
 

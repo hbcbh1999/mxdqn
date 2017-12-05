@@ -98,13 +98,13 @@ class NeuralAgent(object):
 
     def _open_results_file(self):
         logging.info("OPENING " + self.exp_dir + '/results.csv')
-        self.results_file = open(self.exp_dir + '/results.csv', 'w', 0)
+        self.results_file = open(self.exp_dir + '/results.csv', 'w')
         self.results_file.write(\
             'epoch,num_episodes,total_reward,reward_per_epoch,mean_q\n')
         self.results_file.flush()
 
     def _open_learning_file(self):
-        self.learning_file = open(self.exp_dir + '/learning.csv', 'w', 0)
+        self.learning_file = open(self.exp_dir + '/learning.csv', 'w')
         self.learning_file.write('mean_loss,epsilon\n')
         self.learning_file.flush()
 
@@ -292,7 +292,7 @@ class NeuralAgent(object):
 
     def finish_epoch(self, epoch):
         net_file = self.exp_dir + '/network_file_' + str(epoch) + '.params'
-	mx.nd.save(net_file, self.network.policy_exe.arg_dict)
+        mx.nd.save(net_file, self.network.policy_exe.arg_dict)
 
     def start_testing(self):
         self.testing = True

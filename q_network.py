@@ -170,10 +170,11 @@ class DeepQLearner:
             data=(1, num_frames, input_width, input_height),
             partial_shaping=True)
 
+
         initializer = DQNInitializer(factor_type='in')
         names = net.list_arguments()
         for name in names:
-            initializer(name, self.loss_exe.arg_dict[name])
+            initializer(mx.init.InitDesc(name), self.loss_exe.arg_dict[name])
 
         self.target_exe.copy_params_from(arg_params=self.loss_exe.arg_dict)
         self.optimizer = mx.optimizer.create(
