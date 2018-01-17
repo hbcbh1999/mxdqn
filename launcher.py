@@ -7,7 +7,7 @@ run_nips.py or run_nature.py.
 import os
 import argparse
 import logging
-import ale_python_interface
+import gym
 import numpy as np
 import mxnet as mx
 
@@ -27,11 +27,10 @@ def process_args(args, defaults, description):
     """
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        '-r',
-        '--rom',
+        '--env',
         dest="rom",
-        default=defaults.ROM,
-        help='ROM to run (default: %(default)s)')
+        default=defaults.ENV,
+        help='Game to run (default: %(default)s)')
     parser.add_argument(
         '-e',
         '--epochs',
@@ -243,8 +242,7 @@ def process_args(args, defaults, description):
 
     parameters = parser.parse_args(args)
     if parameters.experiment_prefix is None:
-        name = os.path.splitext(os.path.basename(parameters.rom))[0]
-        parameters.experiment_prefix = 'logs/' + name
+        parameters.experiment_prefix = 'logs/' + parameters.rom
 
     if parameters.death_ends_episode == 'true':
         parameters.death_ends_episode = True
@@ -277,11 +275,6 @@ def launch(args, defaults, description):
     logging.basicConfig(level=logging.INFO)
     parameters = process_args(args, defaults, description)
 
-    if parameters.rom.endswith('.bin'):
-        rom = parameters.rom
-    else:
-        rom = "%s.bin" % parameters.rom
-    full_rom_path = os.path.join(defaults.BASE_ROM_PATH, rom)
 
     if parameters.deterministic:
         rng = np.random.RandomState(123456)
@@ -291,7 +284,7 @@ def launch(args, defaults, description):
     #ctx = [mx.gpu(int(idx)) for idx in parameters.ctx.split(',')]
     ctx = mx.gpu(int(parameters.ctx))
 
-    ale = ale_python_interface.ALEInterface()
+    ale = gym.make(parameters.rom).env.ale
     ale.setInt(b'random_seed', rng.randint(1000))
 
     if parameters.display_screen:
@@ -305,7 +298,6 @@ def launch(args, defaults, description):
     ale.setFloat(b'repeat_action_probability',
                  parameters.repeat_action_probability)
 
-    ale.loadROM(str.encode(full_rom_path))
 
     num_actions = len(ale.getMinimalActionSet())
 
